@@ -4,6 +4,7 @@
 #pragma newdecls required
 #include <sourcemod>
 #include <basecomm>
+#undef REQUIRE_PLUGIN
 #include <l4d2_name_tag>
 
 ConVar hCvarCvarChange, hCvarNameChange, hCvarSpecNameChange, hCvarSpecSeeChat;
