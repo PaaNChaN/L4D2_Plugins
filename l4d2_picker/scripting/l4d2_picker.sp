@@ -229,7 +229,7 @@ public Action StartVotePicker_Timer(Handle timer)
 public void Initialize()
 {
     bIsPicking = false;
-    alJoinPlayers = new ArrayList(ByteCountToCells(512));
+    alJoinPlayers = new ArrayList();
     cChoosePlayers = "";
     iFirstPickerClient = iSecoundPickerClient = iFirstAndSecondPicker = -1;
     
@@ -246,7 +246,7 @@ public void StartRandomChoosePicker()
         if (IsClientInGame(client) && !IsFakeClient(client) && IsPlayer(client))
         {
             bJoinPlayer[client] = true;
-            PushArrayCell(alJoinPlayers, client);
+            alJoinPlayers.Push(client);
         }
     }
 
@@ -258,9 +258,9 @@ public void StartRandomChoosePicker()
 
 public int GetPickerClient()
 {
-    int iRandomInt    = GetRandomInt(0, GetArraySize(alJoinPlayers) - 1);
-    int iPickerClient = GetArrayCell(alJoinPlayers, iRandomInt);
-    RemoveFromArray(alJoinPlayers, iRandomInt);
+    int iRandomIdx    = GetRandomInt(0, alJoinPlayers.Length - 1);
+    int iPickerClient = alJoinPlayers.Get(iRandomIdx);
+    alJoinPlayers.Erase(iRandomIdx);
 
     return iPickerClient;
 }
@@ -279,9 +279,9 @@ public void StartChoosePlayersPick(int iSurPickerClient, int iInfPickerClient)
     iFirstPickerClient    = iFirstAndSecondPicker == 0 ? iSurPickerClient : iInfPickerClient;
     iSecoundPickerClient  = iFirstAndSecondPicker == 0 ? iInfPickerClient : iSurPickerClient;
 
-    for (int i = 0; i < GetArraySize(alJoinPlayers); i++)
+    for (int i = 0; i < alJoinPlayers.Length; i++)
     {
-        int iPlayerClient = GetArrayCell(alJoinPlayers, i);
+        int iPlayerClient = alJoinPlayers.Get(i);
 
         if (IsClientInGame(iPlayerClient) && !IsFakeClient(iPlayerClient))
         {
@@ -325,6 +325,7 @@ public Action Picking_Timer(Handle timer)
     }
     
     Initialize();
+
     return Plugin_Stop;
 }
 
