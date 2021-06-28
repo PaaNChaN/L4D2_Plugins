@@ -46,7 +46,7 @@ public SharedPlugin __pl_l4d2_name_tag =
 };
 
 #if !defined REQUIRE_PLUGIN
-public void __pl_readyup_SetNTVOptional()
+public void __pl__l4d2_name_tag_SetNTVOptional()
 {
 	MarkNativeAsOptional("LMT_GetNameTag");
 }
