@@ -7,12 +7,12 @@
 #define PF_MAX_LENGTH      32
 
 // ConVars
-ConVar CVLmtAdminPrefix;
-ConVar CVLmtModeratorPrefix;
+ConVar CVNtAdminPrefix;
+ConVar CVNtModeratorPrefix;
 
 // Variables
-char cLmtAdminPrefix[PF_MAX_LENGTH];
-char cLmtModeratorPrefix[PF_MAX_LENGTH];
+char cNtAdminPrefix[PF_MAX_LENGTH];
+char cNtModeratorPrefix[PF_MAX_LENGTH];
 char cNameTag[MAXPLAYERS+1][TAG_MAX_LENGTH];
 Handle hNameTagListKV;
 
@@ -22,7 +22,7 @@ public Plugin myinfo =
     author = "PaaNChaN",
     description = "add nametag to the chat function of bequiet.smx",
     version = PLUGIN_VERSION,
-    url = "https://github.com/PaaNChaN/L4D2_Plugins"
+    url = "https://github.com/PaaNChaN/L4D2_Vote_Picker"
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -53,27 +53,27 @@ public void OnPluginStart()
         SetFailState("Couldn't load l4d2_name_tag.txt!");
     }
 
-    CVLmtAdminPrefix     = CreateConVar("lmt_admin_prefix", "(A)", "type of admin prefix.");
-    CVLmtModeratorPrefix = CreateConVar("lmt_moderator_prefix", "(M)", "type of moderator prefix.");
+    CVNtAdminPrefix     = CreateConVar("nt_admin_prefix", "(A)", "type of admin prefix.");
+    CVNtModeratorPrefix = CreateConVar("nt_moderator_prefix", "(M)", "type of moderator prefix.");
 
     RegAdminCmd("sm_lnametag", LoadNameTag_Cmd, ADMFLAG_BAN, "load the NameTag");
     RegAdminCmd("sm_lnt",      LoadNameTag_Cmd, ADMFLAG_BAN, "load the NameTag");
 
-    CVLmtAdminPrefix.AddChangeHook(OnConVarChanged);
-    CVLmtModeratorPrefix.AddChangeHook(OnConVarChanged);
+    CVNtAdminPrefix.AddChangeHook(OnConVarChanged);
+    CVNtModeratorPrefix.AddChangeHook(OnConVarChanged);
 }
 
 public void OnConfigsExecuted()
 {
-    CVLmtAdminPrefix.GetString(cLmtAdminPrefix, sizeof(cLmtAdminPrefix));
-    CVLmtModeratorPrefix.GetString(cLmtModeratorPrefix, sizeof(cLmtModeratorPrefix));
+    CVNtAdminPrefix.GetString(cNtAdminPrefix, sizeof(cNtAdminPrefix));
+    CVNtModeratorPrefix.GetString(cNtModeratorPrefix, sizeof(cNtModeratorPrefix));
     LoadNameTag();
 }
 
 public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-    CVLmtAdminPrefix.GetString(cLmtAdminPrefix, sizeof(cLmtAdminPrefix));
-    CVLmtModeratorPrefix.GetString(cLmtModeratorPrefix, sizeof(cLmtModeratorPrefix));
+    CVNtAdminPrefix.GetString(cNtAdminPrefix, sizeof(cNtAdminPrefix));
+    CVNtModeratorPrefix.GetString(cNtModeratorPrefix, sizeof(cNtModeratorPrefix));
     LoadNameTag();
 }
 
@@ -126,13 +126,13 @@ public void getClientNameTag(client)
         } while (KvGotoNextKey(hNameTagListKV));
     }
 
-    if (IsClientAdmin(client, Admin_Root) && strlen(cLmtAdminPrefix) > 0)
+    if (IsClientAdmin(client, Admin_Root) && strlen(cNtAdminPrefix) > 0)
     {
-        Format(cNameTag[client], TAG_MAX_LENGTH, "{green}%s{default} %s", cLmtAdminPrefix, cNameTag[client]);
+        Format(cNameTag[client], TAG_MAX_LENGTH, "{green}%s{default} %s", cNtAdminPrefix, cNameTag[client]);
     }
-    else if (IsClientAdmin(client, Admin_Generic) && strlen(cLmtModeratorPrefix) > 0)
+    else if (IsClientAdmin(client, Admin_Generic) && strlen(cNtModeratorPrefix) > 0)
     {
-        Format(cNameTag[client], TAG_MAX_LENGTH, "{olive}%s{default} %s", cLmtModeratorPrefix, cNameTag[client]);
+        Format(cNameTag[client], TAG_MAX_LENGTH, "{olive}%s{default} %s", cNtModeratorPrefix, cNameTag[client]);
     }
 }
 
