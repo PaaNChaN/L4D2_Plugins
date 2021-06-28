@@ -1,7 +1,9 @@
 #include <sourcemod>
 #include <builtinvotes>
 #include <colors>
+#undef REQUIRE_PLUGIN
 #include <readyup>
+#define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "1.0"
 
@@ -95,7 +97,7 @@ public void LeftStartArea_Event(Event event, const char[] name, bool dontBroadca
 
 public Action VotePicker_Cmd(int client, int args) 
 {
-    if (((!bReadyUpAvailable && !bLeftStartArea) || IsInReady()) && IsPlayer(client))
+    if (((!bReadyUpAvailable && !bLeftStartArea) || (bReadyUpAvailable && IsInReady())) && IsPlayer(client))
     {
         int iJoinPlayerCount  = GetJoinPlayerCount();
         int iTotalPlayerCount = GetTotalPlayerCount();
@@ -150,7 +152,7 @@ public Action PickerAnnounce_Cmd(int client, int args)
 
 public Action FourcePicker_Cmd(int client, int args)
 {
-    if (((!bReadyUpAvailable && !bLeftStartArea) || IsInReady()) && IsPlayer(client))
+    if (((!bReadyUpAvailable && !bLeftStartArea) || (bReadyUpAvailable && IsInReady())) && IsPlayer(client))
     {
         int iJoinPlayerCount  = GetJoinPlayerCount();
 
