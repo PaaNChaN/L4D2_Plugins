@@ -7,7 +7,9 @@
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
+#undef REQUIRE_PLUGIN
 #include <l4d2_picker>
+#define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "9.1.1c"
 
