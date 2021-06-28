@@ -22,7 +22,7 @@ public Plugin myinfo =
     author = "PaaNChaN",
     description = "add nametag to the chat function of bequiet.smx",
     version = PLUGIN_VERSION,
-    url = "https://github.com/PaaNChaN/L4D2_Vote_Picker"
+    url = "https://github.com/PaaNChaN/L4D2_Plugins"
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
