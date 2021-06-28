@@ -22,6 +22,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <colors>
 #include <builtinvotes>
 #undef REQUIRE_PLUGIN
 #include <readyup>
