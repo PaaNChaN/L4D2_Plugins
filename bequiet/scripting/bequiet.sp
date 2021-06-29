@@ -46,12 +46,6 @@ public void OnPluginStart()
     hCvarSpecSeeChat.AddChangeHook(cvarChanged);
 }
 
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-    MarkNativeAsOptional("BaseComm_IsClientGagged");
-    return APLRes_Success;
-}
-
 public void OnAllPluginsLoaded()
 {
     // basecomm.smx
