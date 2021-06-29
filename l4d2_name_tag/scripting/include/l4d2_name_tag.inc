@@ -18,10 +18,10 @@
 	You should have received a copy of the GNU General Public License along
 	with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#if defined  _l4d2_name_tag
+#if defined _l4d2_name_tag_included
  #endinput
 #endif
-#define _l4d2_name_tag
+#define _l4d2_name_tag_included
 
 
 /**
@@ -46,7 +46,7 @@ public SharedPlugin __pl_l4d2_name_tag =
 };
 
 #if !defined REQUIRE_PLUGIN
-public void __pl__l4d2_name_tag_SetNTVOptional()
+public void __pl_l4d2_name_tag_SetNTVOptional()
 {
 	MarkNativeAsOptional("LMT_GetNameTag");
 }
