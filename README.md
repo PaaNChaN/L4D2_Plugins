@@ -15,5 +15,6 @@ the plugins (source) here are free to use and modify.
 if you find a bug, we would appreciate it if you could report it.  
   
 # Credits
-PaaNChaN  
-kanna  
+> Contributors  
+- PaaNChaN  
+- kanna  
