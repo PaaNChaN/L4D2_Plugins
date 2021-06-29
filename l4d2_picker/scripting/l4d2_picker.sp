@@ -235,7 +235,7 @@ public void Initialize()
     cChoosePlayers = "";
     iFirstPickerClient = iSecoundPickerClient = iFirstAndSecondPicker = -1;
     
-    for (new client = 1; client <= MaxClients; client++)
+    for (int client = 1; client <= MaxClients; client++)
     {
         bJoinPlayer[client] = false;
     }
@@ -402,7 +402,7 @@ stock bool ChangeClientTeamEx(int client, L4D2_Team team)
 
 stock int FindSurvivorBot()
 {
-    for (new client = 1; client <= MaxClients; client++)
+    for (int client = 1; client <= MaxClients; client++)
     {
         if(IsClientInGame(client) && IsFakeClient(client) && L4D2_Team:GetClientTeam(client) == L4D2Team_Survivor)
         {
