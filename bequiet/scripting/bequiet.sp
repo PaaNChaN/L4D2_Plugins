@@ -3,20 +3,21 @@
 #include <colors>
 #pragma newdecls required
 #include <sourcemod>
-#include <basecomm>
 #undef REQUIRE_PLUGIN
+#include <basecomm>
 #include <l4d2_name_tag>
+#define REQUIRE_PLUGIN
 
 ConVar hCvarCvarChange, hCvarNameChange, hCvarSpecNameChange, hCvarSpecSeeChat;
 bool bCvarChange, bNameChange, bSpecNameChange, bSpecSeeChat, bBSCAvailable, bLNTAvailable;
 
 public Plugin myinfo = 
 {
-    name = "BeQuiet",
-    author = "Sir",
+    name = "BeQuiet [NameTag ver]",
+    author = "Sir, PaaNChaN, xoxo",
     description = "Please be Quiet!",
     version = "1.33.7",
-    url = "https://github.com/SirPlease/SirCoding"
+    url = "https://github.com/PaaNChaN/L4D2_Plugins"
 }
 
 public void OnPluginStart()
@@ -53,10 +54,22 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnAllPluginsLoaded()
 {
-    // l4d2_name_tag.smx
+    // basecomm.smx
     bBSCAvailable = LibraryExists("basecomm");
     // l4d2_name_tag.smx
     bLNTAvailable = LibraryExists("l4d2_name_tag");
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+    if(StrEqual(name, "basecomm"))  bBSCAvailable = true;
+    if(StrEqual(name, "l4d2_name_tag"))  bLNTAvailable = true;
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+    if(StrEqual(name, "basecomm"))  bBSCAvailable = false;
+    if(StrEqual(name, "l4d2_name_tag"))  bLNTAvailable = false;
 }
 
 public Action Say_Callback(int client, char[] command, int args)
