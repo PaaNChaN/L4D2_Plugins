@@ -112,6 +112,10 @@ int
 GlobalForward
 	liveForward;
 
+// Picker Available
+bool
+	bLPAvailable;
+
 // Auto Start
 bool
 	isAutoStartMode,
@@ -132,9 +136,6 @@ Handle g_hChangeTeamTimer[MAXPLAYERS+1];
 
 // :D
 Handle blockSecretSpam[MAXPLAYERS+1];
-
-// L4D2 Vote Picker
-bool bLPAvailable;
 
 // Reason enum for Countdown cancelling
 enum disruptType
@@ -257,6 +258,16 @@ public void OnAllPluginsLoaded()
 {
 	FillServerNamer();
 	bLPAvailable = LibraryExists("l4d2_picker");
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	if ( StrEqual(name, "l4d2_picker") ) bLPAvailable = true;
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	if ( StrEqual(name, "l4d2_picker") ) bLPAvailable = false;
 }
 
 void LoadTranslation()
@@ -1039,11 +1050,11 @@ void UpdatePanel()
 	char infectedBuffer[800] = "";
 	char casterBuffer[600] = "";
 	char specBuffer[400] = "";
-	char choosePlayersBuffer[400] = "";
+	char chooseBuffer[400] = "";
 	int playerCount = 0;
 	int casterCount = 0;
 	int specCount = 0;
-	int choosePlayersCount = 0;
+	int chooseCount = 0;
 	bool isPicking = bLPAvailable && Picker_IsPicking();
 
 	Panel menuPanel = new Panel();
@@ -1109,15 +1120,15 @@ void UpdatePanel()
 				}
 				else if (isPicking && Picker_IsJoinPlayer(client))
 				{
-					++choosePlayersCount;
-					Format(nameBuf, sizeof(nameBuf), "<%d> %s\n", choosePlayersCount, nameBuf);
-					StrCat(choosePlayersBuffer, sizeof(choosePlayersBuffer), nameBuf);
+					++chooseCount;
+					Format(nameBuf, sizeof(nameBuf), "<%d> %s\n", chooseCount, nameBuf);
+					StrCat(chooseBuffer, sizeof(chooseBuffer), nameBuf);
 				}
 				else
 				{
-					++specCount;
 					if (playerCount <= l4d_ready_max_players.IntValue)
 					{
+						++specCount;
 						Format(nameBuf, sizeof(nameBuf), "%s\n", nameBuf);
 						StrCat(specBuffer, sizeof(specBuffer), nameBuf);
 					}
@@ -1128,7 +1139,6 @@ void UpdatePanel()
 	
 	int textCount = 0;
 	char cfsPicker[12];
-
 	int bufLen = strlen(survivorBuffer);
 	if (bufLen != 0)
 	{
@@ -1138,7 +1148,7 @@ void UpdatePanel()
 
 		if (isPicking)
 		{
-			Format(cfsPicker, sizeof(cfsPicker), " [ %s ]", Picker_GetFirstAndSecondPicker() == 0 ? "1st Picker" : "2nd Picker");
+			FormatEx(cfsPicker, sizeof(cfsPicker), " [ %s ]", Picker_GetFirstAndSecondPicker() == 0 ? "1st Picker" : "2nd Picker");
 		}
 
 		Format(nameBuf, sizeof(nameBuf), "->%d. Survivors%s", ++textCount, cfsPicker);
@@ -1155,7 +1165,7 @@ void UpdatePanel()
 
 		if (isPicking)
 		{
-			Format(cfsPicker, sizeof(cfsPicker), " [ %s ]", Picker_GetFirstAndSecondPicker() == 1 ? "1st Picker" : "2nd Picker");
+			FormatEx(cfsPicker, sizeof(cfsPicker), " [ %s ]", Picker_GetFirstAndSecondPicker() == 1 ? "1st Picker" : "2nd Picker");
 		}
 
 		Format(nameBuf, sizeof(nameBuf), "->%d. Infected%s", ++textCount, cfsPicker);
@@ -1163,7 +1173,7 @@ void UpdatePanel()
 		menuPanel.DrawText(infectedBuffer);
 	}
 	
-	if ((specCount || choosePlayersCount) && textCount) menuPanel.DrawText(" ");
+	if ((specCount || chooseCount) && textCount) menuPanel.DrawText(" ");
 
 	bufLen = strlen(casterBuffer);
 	if (bufLen != 0)
@@ -1177,14 +1187,14 @@ void UpdatePanel()
 
 	if (isPicking)
 	{
-		bufLen = strlen(choosePlayersBuffer);
+		bufLen = strlen(chooseBuffer);
 		if (bufLen != 0)
 		{
-			choosePlayersBuffer[bufLen] = '\0';
-			Format(nameBuf, sizeof(nameBuf), "->%d. Choose Player%s", ++textCount, choosePlayersCount > 1 ? "s" : "");
+			chooseBuffer[bufLen] = '\0';
+			FormatEx(nameBuf, sizeof(nameBuf), "->%d. Choose Player%s", ++textCount, chooseCount > 1 ? "s" : "");
 			menuPanel.DrawText(nameBuf);
-			ReplaceString(choosePlayersBuffer, sizeof(choosePlayersBuffer), "#", "_");
-			menuPanel.DrawText(choosePlayersBuffer);
+			ReplaceString(chooseBuffer, sizeof(chooseBuffer), "#", "_", true);
+			menuPanel.DrawText(chooseBuffer);
 		}
 	}
 	
@@ -1195,8 +1205,8 @@ void UpdatePanel()
 		Format(nameBuf, sizeof(nameBuf), "->%d. Spectator%s", ++textCount, specCount > 1 ? "s" : "");
 		menuPanel.DrawText(nameBuf);
 		ReplaceString(specBuffer, sizeof(specBuffer), "#", "_");
-		if (playerCount > l4d_ready_max_players.IntValue && specCount - casterCount > 1)
-			FormatEx(specBuffer, sizeof(specBuffer), "**Many** (%d)", specCount - casterCount);
+		if (playerCount > l4d_ready_max_players.IntValue && specCount > 1)
+			FormatEx(specBuffer, sizeof(specBuffer), "**Many** (%d)", specCount);
 		menuPanel.DrawText(specBuffer);
 	}
 
