@@ -51,12 +51,12 @@
 	"ForceStartAdmin"
 	{
 		"#format"	"{1:N}"
-		"jp"		"[{green}!{default}] {blue}アドミン {default}({olive}{1}{default}) が {green}強制的{default}に{blue}ゲーム {default}をスタートしました。"
+		"jp"		"[{green}!{default}] {blue}アドミン {default}({olive}{1}{default}) が{green}強制的{default}に{blue}ゲーム{default}をスタートしました。"
 	}
 	"KickSpecsAdmin"
 	{
 		"#format"	"{1:N}"
-		"jp"		"[{green}!{default}] {blue}アドミン {default}({olive}{1}{default}) は {blue}観戦者全員 {default}をキックしました。"
+		"jp"		"[{green}!{default}] {blue}アドミン {default}({olive}{1}{default}) は{blue}観戦者全員{default}をキックしました。"
 	}
 	
 	"KickSpecsVoteSpec"
@@ -96,7 +96,7 @@
 	"DisruptForceStartAbort"
 	{
 		"#format"	"{1:N}"
-		"jp"		"{default}[{green}!{default}] {green}ゲームの強制スタートをストップさせました！ {default}({olive}{1} {green}がストップさせました{default})"
+		"jp"		"{default}[{green}!{default}] {green}ラウンドの強制スタートをストップさせました！ {default}({olive}{1} {green}がストップさせました{default})"
 	}
 	
 	
@@ -178,13 +178,13 @@
 	
 	"LiveCountdownBegin"
 	{
-		"jp"		"ゲームを開始します！\n !unready と入力 / F2 キーを押すとキャンセル"
+		"jp"		"ラウンドを開始します！\n !unready と入力 / F2 キーを押すとキャンセル"
 	}
 	
 	"LiveCountdown"
 	{
 		"#format"	"{1:d}"
-		"jp"		"ゲーム開始まで: {1}\n !unready と入力 / F2 キーを押すとキャンセル"
+		"jp"		"ラウンド開始まで: {1}\n !unready と入力 / F2 キーを押すとキャンセル"
 	}
 	
 	"LiveCountdownCancelled"
@@ -194,12 +194,12 @@
 	
 	"RoundIsLive"
 	{
-		"jp"		"ゲーム開始！"
+		"jp"		"ラウンド開始！"
 	}
 	
 	"InitiateAutoStart"
 	{
-		"jp"		"ゲームが自動的に開始します！"
+		"jp"		"ゲームが自動的に開始されます！"
 	}
 	
 	"AutoStartCountdown"
