@@ -51,7 +51,7 @@
 	"ForceStartAdmin"
 	{
 		"#format"	"{1:N}"
-		"jp"		"[{green}!{default}] {blue}アドミン {default}({olive}{1}{default}) が{green}強制的{default}に{blue}ゲーム{default}をスタートしました。"
+		"jp"		"[{green}!{default}] {blue}アドミン {default}({olive}{1}{default}) が{green}強制的{default}に{blue}ラウンド{default}をスタートしました。"
 	}
 	"KickSpecsAdmin"
 	{
@@ -96,7 +96,7 @@
 	"DisruptForceStartAbort"
 	{
 		"#format"	"{1:N}"
-		"jp"		"{default}[{green}!{default}] {green}ラウンドの強制スタートをストップさせました！ {default}({olive}{1} {green}がストップさせました{default})"
+		"jp"		"{default}[{green}!{default}] {green}ラウンドの強制スタートがストップされました！ {default}({olive}{1} {green}がストップさせました{default})"
 	}
 	
 	
