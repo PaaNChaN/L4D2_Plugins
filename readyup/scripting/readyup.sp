@@ -1126,9 +1126,9 @@ void UpdatePanel()
 				}
 				else
 				{
+					++specCount;
 					if (playerCount <= l4d_ready_max_players.IntValue)
 					{
-						++specCount;
 						Format(nameBuf, sizeof(nameBuf), "%s\n", nameBuf);
 						StrCat(specBuffer, sizeof(specBuffer), nameBuf);
 					}
