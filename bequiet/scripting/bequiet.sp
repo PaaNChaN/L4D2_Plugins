@@ -137,7 +137,7 @@ public Action TeamSay_Callback(int client, char[] command, int args)
                     LMT_GetNameTag(client, name_tag, sizeof(name_tag));
                 }
 
-                CPrintToChat(i, "{default}(%s) %s{blue}%N{default} :  {olive}%s", GetStrTeamName(client), name_tag, client, sChat);
+                CPrintToChatEx(i, client, "{default}(%s) %s{teamcolor}%N{default} :  {olive}%s", GetStrTeamName(client), name_tag, client, sChat);
             }
             i++;
         }
