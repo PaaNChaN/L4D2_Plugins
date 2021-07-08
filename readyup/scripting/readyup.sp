@@ -1121,7 +1121,7 @@ void UpdatePanel()
 				else if (isPicking && Picker_IsJoinPlayer(client))
 				{
 					++chooseCount;
-					Format(nameBuf, sizeof(nameBuf), "<%d> %s\n", chooseCount, nameBuf);
+					Format(nameBuf, sizeof(nameBuf), "%d : %s\n", chooseCount, nameBuf);
 					StrCat(chooseBuffer, sizeof(chooseBuffer), nameBuf);
 				}
 				else
@@ -1138,7 +1138,7 @@ void UpdatePanel()
 	}
 	
 	int textCount = 0;
-	char cfsPicker[12];
+	char cfsPicker[32];
 	int bufLen = strlen(survivorBuffer);
 	if (bufLen != 0)
 	{
