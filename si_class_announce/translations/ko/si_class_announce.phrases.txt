@@ -1,0 +1,37 @@
+"Phrases"
+{
+	"Print_Title"
+	{
+		"ko"		"특수 좀비: "
+	}
+
+	"Smoker"
+	{
+		"ko"		"스모커"
+	}
+	
+	"(Boomer)"
+	{
+		"ko"		"(부머)"
+	}
+
+	"Hunter"
+	{
+		"ko"		"헌터"
+	}
+
+	"(Spitter)"
+	{
+		"ko"		"(스피터)"
+	}
+
+	"Jockey"
+	{
+		"ko"		"조키"
+	}
+
+	"Charger"
+	{
+		"ko"		"차져"
+	}
+}

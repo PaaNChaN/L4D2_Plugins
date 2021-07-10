@@ -1,0 +1,37 @@
+"Phrases"
+{
+	"Print_Title"
+	{
+		"jp"		"特殊感染者: "
+	}
+
+	"Smoker"
+	{
+		"jp"		"スモーカー"
+	}
+	
+	"(Boomer)"
+	{
+		"jp"		"(ブーマー)"
+	}
+
+	"Hunter"
+	{
+		"jp"		"ハンター"
+	}
+
+	"(Spitter)"
+	{
+		"jp"		"(スピッター)"
+	}
+
+	"Jockey"
+	{
+		"jp"		"ジョッキー"
+	}
+
+	"Charger"
+	{
+		"jp"		"チャージャー"
+	}
+}

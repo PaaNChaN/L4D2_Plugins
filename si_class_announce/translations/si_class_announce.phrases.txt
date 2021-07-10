@@ -1,0 +1,37 @@
+﻿"Phrases"
+{
+	"Print_Title"
+	{
+		"en"		"Special Infected: "
+	}
+	
+	"Smoker"
+	{
+		"en"		"Smoker"
+	}
+	
+	"(Boomer)"
+	{
+		"en"		"(Boomer)"
+	}
+
+	"Hunter"
+	{
+		"en"		"Hunter"
+	}
+
+	"(Spitter)"
+	{
+		"en"		"(Spitter)"
+	}
+
+	"Jockey"
+	{
+		"en"		"Jockey"
+	}
+
+	"Charger"
+	{
+		"en"		"Charger"
+	}
+}
