@@ -10,7 +10,7 @@
 テストプラグインに関しては動作確認が終わるまでソースの公開は控えさせて下さい。  
 
 #### English:  
-created plugins / customized plugins repository.  
+create / customize plugins repository.  
 
 the plugins (source) here are free to use and modify.  
 
