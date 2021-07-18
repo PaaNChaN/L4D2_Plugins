@@ -90,7 +90,7 @@ public Action Say_Callback(int client, char[] command, int args)
 
             if (bLNTAvailable)
             {
-                LMT_GetNameTag(client, name_tag, sizeof(name_tag));
+                LNT_GetNameTag(client, name_tag, sizeof(name_tag));
             }
 
             if (GetClientTeam(client) == 1)
@@ -134,7 +134,7 @@ public Action TeamSay_Callback(int client, char[] command, int args)
 
                 if (bLNTAvailable)
                 {
-                    LMT_GetNameTag(client, name_tag, sizeof(name_tag));
+                    LNT_GetNameTag(client, name_tag, sizeof(name_tag));
                 }
 
                 CPrintToChatEx(i, client, "{default}(%s) %s{teamcolor}%N{default} :  {olive}%s", GetStrTeamName(client), name_tag, client, sChat);
@@ -153,7 +153,7 @@ public Action TeamSay_Callback(int client, char[] command, int args)
 
             if (bLNTAvailable)
             {
-                LMT_GetNameTag(client, name_tag, sizeof(name_tag));
+                LNT_GetNameTag(client, name_tag, sizeof(name_tag));
             }
 
             CPrintToChatEx(i, client, "{default}(%s) %s{teamcolor}%N{default} :  %s", GetStrTeamName(client), name_tag, client, sChat);

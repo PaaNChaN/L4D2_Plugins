@@ -2,19 +2,24 @@
 #include <colors>
 
 #define NAME_TAG_FILE_PATH "configs/l4d2_name_tag.txt"
-#define PLUGIN_VERSION     "1.0"
+#define PLUGIN_VERSION     "1.1"
 #define TAG_MAX_LENGTH     256
 #define PF_MAX_LENGTH      32
 
 // ConVars
-ConVar CVNtAdminPrefix;
-ConVar CVNtModeratorPrefix;
+ConVar
+    g_cVLntAdminPrefix,
+    g_cVLntModeratorPrefix;
 
 // Variables
-char cNtAdminPrefix[PF_MAX_LENGTH];
-char cNtModeratorPrefix[PF_MAX_LENGTH];
-char cNameTag[MAXPLAYERS+1][TAG_MAX_LENGTH];
-Handle hNameTagListKV;
+char
+    g_cNameTagPath[256],
+    g_cLntAdminPrefix[PF_MAX_LENGTH],
+    g_cLntModeratorPrefix[PF_MAX_LENGTH],
+    g_cNameTag[MAXPLAYERS+1][TAG_MAX_LENGTH];
+
+KeyValues 
+    g_KvNameTagList;
 
 public Plugin myinfo =  
 {
@@ -27,53 +32,55 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    CreateNative("LMT_GetNameTag", Native_LMT_GetNameTag);
+    CreateNative("LNT_GetNameTag", Native_LNT_GetNameTag);
     
     RegPluginLibrary("l4d2_name_tag");
     return APLRes_Success;
 }
 
-public int Native_LMT_GetNameTag(Handle plugin, int numParams)
+public int Native_LNT_GetNameTag(Handle plugin, int numParams)
 {
     new client = GetNativeCell(1);
 
     if (IsClientInGame(client) && !IsFakeClient(client))
     {
-        SetNativeString(2, cNameTag[client], GetNativeCell(3));
-        return _:true;
+        SetNativeString(2, g_cNameTag[client], GetNativeCell(3));
+        return true;
     }
 
-    return _:false;
+    return false;
 }
 
 public void OnPluginStart()
 {
-    if (!IsNameTagFileExist())
+    BuildPath(Path_SM, g_cNameTagPath, sizeof(g_cNameTagPath), NAME_TAG_FILE_PATH);
+
+    if (!FileExists(g_cNameTagPath))
     {
         SetFailState("Couldn't load l4d2_name_tag.txt!");
     }
 
-    CVNtAdminPrefix     = CreateConVar("nt_admin_prefix", "(A)", "type of admin prefix.");
-    CVNtModeratorPrefix = CreateConVar("nt_moderator_prefix", "(M)", "type of moderator prefix.");
+    g_cVLntAdminPrefix     = CreateConVar("lnt_admin_prefix", "(A)", "type of admin prefix.");
+    g_cVLntModeratorPrefix = CreateConVar("lnt_moderator_prefix", "(M)", "type of moderator prefix.");
 
-    RegAdminCmd("sm_lnametag", LoadNameTag_Cmd, ADMFLAG_BAN, "load the NameTag");
-    RegAdminCmd("sm_lnt",      LoadNameTag_Cmd, ADMFLAG_BAN, "load the NameTag");
+    RegAdminCmd("sm_lnametag", LoadNameTag_Cmd, ADMFLAG_BAN, "reload the l4d2_name_tag.txt");
+    RegAdminCmd("sm_lnt", LoadNameTag_Cmd, ADMFLAG_BAN, "reload the l4d2_name_tag.txt");
 
-    CVNtAdminPrefix.AddChangeHook(OnConVarChanged);
-    CVNtModeratorPrefix.AddChangeHook(OnConVarChanged);
+    g_cVLntAdminPrefix.AddChangeHook(OnConVarChanged);
+    g_cVLntModeratorPrefix.AddChangeHook(OnConVarChanged);
 }
 
 public void OnConfigsExecuted()
 {
-    CVNtAdminPrefix.GetString(cNtAdminPrefix, sizeof(cNtAdminPrefix));
-    CVNtModeratorPrefix.GetString(cNtModeratorPrefix, sizeof(cNtModeratorPrefix));
+    g_cVLntAdminPrefix.GetString(g_cLntAdminPrefix, sizeof(g_cLntAdminPrefix));
+    g_cVLntModeratorPrefix.GetString(g_cLntModeratorPrefix, sizeof(g_cLntModeratorPrefix));
     LoadNameTag();
 }
 
 public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-    CVNtAdminPrefix.GetString(cNtAdminPrefix, sizeof(cNtAdminPrefix));
-    CVNtModeratorPrefix.GetString(cNtModeratorPrefix, sizeof(cNtModeratorPrefix));
+    g_cVLntAdminPrefix.GetString(g_cLntAdminPrefix, sizeof(g_cLntAdminPrefix));
+    g_cVLntModeratorPrefix.GetString(g_cLntModeratorPrefix, sizeof(g_cLntModeratorPrefix));
     LoadNameTag();
 }
 
@@ -90,50 +97,49 @@ public Action LoadNameTag_Cmd(int client, int args)
 
 public void LoadNameTag()
 {
-    for (int i = 1; i <= MaxClients; i++)
+    for (int client = 1; client <= MaxClients; client++)
     {
-        if (IsClientInGame(i) && !IsFakeClient(i))
+        if (IsClientInGame(client) && !IsFakeClient(client))
         {
-            getClientNameTag(i);
+            getClientNameTag(client);
         }
     }
 }
 
-public void getClientNameTag(client)
+public void getClientNameTag(int client)
 {
-    if (!IsNameTagFileExist())
+    if (!LoadKeyValues())
     {
         return;
     }
 
-    cNameTag[client] = "";
+    g_cNameTag[client] = "";
 
-    KvRewind(hNameTagListKV);
-    if (KvGotoFirstSubKey(hNameTagListKV))
+    char sAuth[64];
+    GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+
+    g_KvNameTagList.Rewind();
+    if (g_KvNameTagList.JumpToKey(sAuth, false))
     {
-        char sAuth[64];
-        GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
-        do
-        {
-            char sBuffer[TAG_MAX_LENGTH];
-            KvGetSectionName(hNameTagListKV, sBuffer, sizeof(sBuffer));
-            if(strcmp(sAuth, sBuffer) == 0)
-            {
-                KvGetString(hNameTagListKV, "tag", sBuffer, sizeof(sBuffer));
-                Format(cNameTag[client], TAG_MAX_LENGTH, "%s ", sBuffer);
-                break;
-            }
-        } while (KvGotoNextKey(hNameTagListKV));
+        char cTagName[TAG_MAX_LENGTH];
+        g_KvNameTagList.GetString("tag", cTagName, sizeof(cTagName));
+        Format(g_cNameTag[client], TAG_MAX_LENGTH, "%s ", cTagName);
     }
 
-    if (IsClientAdmin(client, Admin_Root) && strlen(cNtAdminPrefix) > 0)
+    if (IsClientAdmin(client, Admin_Root) && strlen(g_cLntAdminPrefix) > 0)
     {
-        Format(cNameTag[client], TAG_MAX_LENGTH, "{green}%s{default} %s", cNtAdminPrefix, cNameTag[client]);
+        Format(g_cNameTag[client], TAG_MAX_LENGTH, "{green}%s{default} %s", g_cLntAdminPrefix, g_cNameTag[client]);
     }
-    else if (IsClientAdmin(client, Admin_Generic) && strlen(cNtModeratorPrefix) > 0)
+    else if (IsClientAdmin(client, Admin_Generic) && strlen(g_cLntModeratorPrefix) > 0)
     {
-        Format(cNameTag[client], TAG_MAX_LENGTH, "{olive}%s{default} %s", cNtModeratorPrefix, cNameTag[client]);
+        Format(g_cNameTag[client], TAG_MAX_LENGTH, "{olive}%s{default} %s", g_cLntModeratorPrefix, g_cNameTag[client]);
     }
+}
+
+stock bool LoadKeyValues()
+{
+    g_KvNameTagList = new KeyValues("NameTag");
+    return g_KvNameTagList.ImportFromFile(g_cNameTagPath);
 }
 
 stock bool IsClientAdmin(int client, AdminFlag flag)
@@ -146,18 +152,4 @@ stock bool IsClientAdmin(int client, AdminFlag flag)
     }
 
     return false;
-}
-
-stock bool IsNameTagFileExist()
-{
-    char sBuffer[128];
-    hNameTagListKV = CreateKeyValues("NameTag");
-    BuildPath(Path_SM, sBuffer, sizeof(sBuffer), NAME_TAG_FILE_PATH);
-
-    if (!FileToKeyValues(hNameTagListKV, sBuffer))
-    {
-        return false;
-    }
-    
-    return true;
 }

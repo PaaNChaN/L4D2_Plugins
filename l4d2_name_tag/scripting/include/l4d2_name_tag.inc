@@ -31,7 +31,7 @@
  * @param char[] nametag  Buffer to store the client's NameTag.
  * @param int    maxlen   Maximum length of string buffer (includes NULL terminator)
  */
-native bool LMT_GetNameTag(int client, char[] nametag, int maxlen);
+native bool LNT_GetNameTag(int client, char[] nametag, int maxlen);
 
 
 public SharedPlugin __pl_l4d2_name_tag =
@@ -48,6 +48,6 @@ public SharedPlugin __pl_l4d2_name_tag =
 #if !defined REQUIRE_PLUGIN
 public void __pl_l4d2_name_tag_SetNTVOptional()
 {
-	MarkNativeAsOptional("LMT_GetNameTag");
+	MarkNativeAsOptional("LNT_GetNameTag");
 }
 #endif
