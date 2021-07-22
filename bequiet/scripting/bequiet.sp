@@ -103,6 +103,8 @@ public Action Say_Callback(int client, char[] command, int args)
             }
         }
     }
+    
+    CallFakeEvent(client, sChat);
 
     return Plugin_Handled; 
 }
@@ -160,6 +162,8 @@ public Action TeamSay_Callback(int client, char[] command, int args)
         }
     }
 
+    CallFakeEvent(client, sChat);
+    
     return Plugin_Handled;
 }
 
@@ -180,6 +184,17 @@ public Action Event_NameChange(Event event, const char[] name, bool dontBroadcas
         else if (bNameChange) return Plugin_Handled;
     }
     return Plugin_Continue;
+}
+
+void CallFakeEvent(int client, const char[] text)
+{
+	Event event = CreateEvent("player_say");
+	if (event != null)
+	{
+		event.SetInt("userid", GetClientUserId(client));
+		event.SetString("text", text);
+		event.Fire();
+	}
 }
 
 public void cvarChanged(Handle convar, const char[] oldValue, const char[] newValue)
