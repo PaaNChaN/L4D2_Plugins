@@ -1,21 +1,22 @@
+#pragma semicolon 1
+#pragma newdecls required
+
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
 #include <builtinvotes>
+#include <l4d2util_stocks>
 #include <colors>
 #undef REQUIRE_PLUGIN
 #include <l4d2_picker>
 #define REQUIRE_PLUGIN
-
-#pragma semicolon 1
-#pragma newdecls required
 
 #define PLUGIN_VERSION "9.2.4"
 
 public Plugin myinfo =
 {
 	name = "L4D2 Ready-Up with convenience fixes",
-	author = "CanadaRox, Target",
+	author = "CanadaRox, Target", //Add support sm1.11 - A1m`
 	description = "New and improved ready-up plugin with optimal for convenience.",
 	version = PLUGIN_VERSION,
 	url = "https://github.com/Target5150/MoYu_Server_Stupid_Plugins"
@@ -25,7 +26,6 @@ public Plugin myinfo =
 //  Defines
 // ========================
 #define NULL_VELOCITY view_as<float>({0.0, 0.0, 0.0})
-#define MIN(%0,%1) ((%0) < (%1) ? (%0) : (%1))
 
 #define L4D2Team_None		0
 #define L4D2Team_Spectator	1
@@ -109,12 +109,13 @@ char
 	liveSound[PLATFORM_MAX_PATH];
 int
 	readyDelay;
-GlobalForward
+
+Handle
 	liveForward;
 
 // Picker Available
 bool
-	bLPAvailable;
+	g_bLPAvailable;
 
 // Auto Start
 bool
@@ -168,7 +169,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("IsInReady",				Native_IsInReady);
 	CreateNative("IsClientCaster", 			Native_IsClientCaster);
 	CreateNative("IsIDCaster", 				Native_IsIDCaster);
-	liveForward = new GlobalForward("OnRoundIsLive", ET_Event);
+	liveForward = CreateGlobalForward("OnRoundIsLive", ET_Event);
 	RegPluginLibrary("readyup");
 	return APLRes_Success;
 }
@@ -246,7 +247,23 @@ public void OnPluginStart()
 	readySurvFreeze = l4d_ready_survivor_freeze.BoolValue;
 	l4d_ready_survivor_freeze.AddChangeHook(SurvFreezeChange);
 	
-	l4d_ready_server_cvar.AddChangeHook(view_as<ConVarChanged>(FillServerNamer));
+	l4d_ready_server_cvar.AddChangeHook(ServerCvar_Changed);
+}
+
+public void ServerCvar_Changed(Handle convar, const char[] oldValue, const char[] newValue)
+{
+	FillServerNamer();
+	g_bLPAvailable = LibraryExists("l4d2_picker");
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	if ( StrEqual(name, "l4d2_picker") ) g_bLPAvailable = true;
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	if ( StrEqual(name, "l4d2_picker") ) g_bLPAvailable = false;
 }
 
 public void OnPluginEnd()
@@ -257,17 +274,6 @@ public void OnPluginEnd()
 public void OnAllPluginsLoaded()
 {
 	FillServerNamer();
-	bLPAvailable = LibraryExists("l4d2_picker");
-}
-
-public void OnLibraryAdded(const char[] name)
-{
-	if ( StrEqual(name, "l4d2_picker") ) bLPAvailable = true;
-}
-
-public void OnLibraryRemoved(const char[] name)
-{
-	if ( StrEqual(name, "l4d2_picker") ) bLPAvailable = false;
 }
 
 void LoadTranslation()
@@ -1055,7 +1061,7 @@ void UpdatePanel()
 	int casterCount = 0;
 	int specCount = 0;
 	int chooseCount = 0;
-	bool isPicking = bLPAvailable && Picker_IsPicking();
+	bool isPicking = g_bLPAvailable && Picker_IsPicking();
 
 	Panel menuPanel = new Panel();
 
@@ -1472,7 +1478,7 @@ bool CheckFullReady()
 	}
 	
 	int iBaseline = l4d_ready_unbalanced_min.IntValue;
-	iBaseline = MIN(MIN(iBaseline, survivor_limit.IntValue), z_max_player_zombies.IntValue);
+	iBaseline = L4D2Util_GetMin(L4D2Util_GetMin(iBaseline, survivor_limit.IntValue), z_max_player_zombies.IntValue);
 	if (l4d_ready_unbalanced_start.BoolValue)
 	{
 		return survReadyCount >= iBaseline
