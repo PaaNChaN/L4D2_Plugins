@@ -283,12 +283,12 @@ public void StartChoosePlayersPick(int iSurPickerClient, int iInfPickerClient)
 
     for (int i = 0; i < alJoinPlayers.Length; i++)
     {
-        int iPlayerClient = alJoinPlayers.Get(i);
+        int client = alJoinPlayers.Get(i);
 
-        if (IsClientInGame(iPlayerClient) && !IsFakeClient(iPlayerClient))
+        if (IsClientInGame(client) && !IsFakeClient(client))
         {
             char cPlayerName[128];
-            GetClientName(iPlayerClient, cPlayerName, sizeof(cPlayerName));
+            GetClientName(client, cPlayerName, sizeof(cPlayerName));
 
             if (i > 0)
             {
@@ -363,8 +363,10 @@ public void ShowPrintChatPickerList(int client)
 
 public void JoinPlayersToSpec()
 {
-    for (int client = 1; client <= MaxClients; client++)
+    for (int i = 0; i < alJoinPlayers.Length; i++)
     {
+        int client = alJoinPlayers.Get(i);
+
         if (IsClientInGame(client) && !IsFakeClient(client))
         {
             ChangeClientTeamEx(client, L4D2Team_Spectator);
