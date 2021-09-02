@@ -10,7 +10,7 @@
 #include <caster_system>
 #include <l4d2_picker>
 
-#define PLUGIN_VERSION "9.3.2"
+#define PLUGIN_VERSION "9.3.4"
 
 public Plugin myinfo =
 {
@@ -138,6 +138,7 @@ bool l4d2PickerAvailable;
 // CDirector::IsInTransition
 Handle g_hSDKCall_IsInTransition;
 Address g_pDirector;
+bool g_bTransitioning;
 
 // Reason enum for Countdown cancelling
 enum disruptType
@@ -362,12 +363,16 @@ public void ServerCvarChanged(ConVar convar, const char[] oldValue, const char[]
 
 public void OnConfigsExecuted()
 {
-	InitiateReadyUp();
+	if (g_bTransitioning)
+	{
+		g_bTransitioning = false;
+		InitiateReadyUp();
+	}
 }
 
 public void RoundStart_Event(Event event, const char[] name, bool dontBroadcast)
 {
-	if (InSecondHalfOfRound()) InitiateReadyUp();
+	if (!g_bTransitioning) InitiateReadyUp();
 }
 
 public void GameInstructorDraw_Event(Event event, const char[] name, bool dontBroadcast)
@@ -489,6 +494,7 @@ public void OnMapEnd()
 		if (inAutoStart) InitiateAutoStart(false);
 		InitiateLive(false);
 	}
+	g_bTransitioning = true;
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -528,7 +534,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 		
 		if (GetClientTeam(client) == L4D2Team_Survivor)
 		{
-			if (readySurvFreeze)
+			if (readySurvFreeze || inLiveCountdown)
 			{
 				MoveType iMoveType = GetEntityMoveType(client);
 				if (iMoveType != MOVETYPE_NONE && iMoveType != MOVETYPE_NOCLIP)
@@ -950,7 +956,6 @@ void UpdatePanel()
 		}
 	}
 	
-	
 	bufLen = strlen(specBuffer);
 	if (bufLen != 0)
 	{
@@ -1149,7 +1154,6 @@ void InitiateLiveCountdown()
 	if (readyCountdownTimer == null)
 	{
 		ReturnTeamToSaferoom(L4D2Team_Survivor);
-		SetTeamFrozen(L4D2Team_Survivor, true);
 		PrintHintTextToAll("%t", "LiveCountdownBegin");
 		inLiveCountdown = true;
 		readyDelay = l4d_ready_delay.IntValue;
@@ -1240,46 +1244,6 @@ void CancelFullReady(int client, disruptType type)
 			case forceStartAbort: CPrintToChatAll("%t", "DisruptForceStartAbort", client);
 		}
 	}
-}
-
-void ReturnPlayerToSaferoom(int client, bool flagsSet = true)
-{
-	int warp_flags;
-	if (!flagsSet)
-	{
-		warp_flags = GetCommandFlags("warp_to_start_area");
-		SetCommandFlags("warp_to_start_area", warp_flags & ~FCVAR_CHEAT);
-	}
-
-	if (GetEntProp(client, Prop_Send, "m_isHangingFromLedge"))
-	{
-		L4D_ReviveSurvivor(client);
-	}
-
-	FakeClientCommand(client, "warp_to_start_area");
-
-	if (!flagsSet)
-	{
-		SetCommandFlags("warp_to_start_area", warp_flags);
-	}
-	
-	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, NULL_VELOCITY);
-}
-
-void ReturnTeamToSaferoom(int team)
-{
-	int warp_flags = GetCommandFlags("warp_to_start_area");
-	SetCommandFlags("warp_to_start_area", warp_flags & ~FCVAR_CHEAT);
-
-	for (int client = 1; client <= MaxClients; client++)
-	{
-		if (IsClientInGame(client) && GetClientTeam(client) == team)
-		{
-			ReturnPlayerToSaferoom(client, true);
-		}
-	}
-
-	SetCommandFlags("warp_to_start_area", warp_flags);
 }
 
 public Action Timer_RestartCountdowns(Handle timer, bool startOn)
@@ -1553,11 +1517,6 @@ bool IsInTransition()
 		&& SDKCall(g_hSDKCall_IsInTransition, g_pDirector);
 }
 
-bool InSecondHalfOfRound()
-{
-	return view_as<bool>(GameRules_GetProp("m_bInSecondHalfOfRound"));
-}
-
 void SetEngineTime(int client)
 {
 	g_fButtonTime[client] = GetEngineTime();
@@ -1638,6 +1597,46 @@ stock int GetSeriousClientCount(bool inGame = false)
 	}
 	
 	return clients;
+}
+
+stock void ReturnPlayerToSaferoom(int client, bool flagsSet = true)
+{
+	int warp_flags;
+	if (!flagsSet)
+	{
+		warp_flags = GetCommandFlags("warp_to_start_area");
+		SetCommandFlags("warp_to_start_area", warp_flags & ~FCVAR_CHEAT);
+	}
+
+	if (GetEntProp(client, Prop_Send, "m_isHangingFromLedge"))
+	{
+		L4D_ReviveSurvivor(client);
+	}
+
+	FakeClientCommand(client, "warp_to_start_area");
+
+	if (!flagsSet)
+	{
+		SetCommandFlags("warp_to_start_area", warp_flags);
+	}
+	
+	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, NULL_VELOCITY);
+}
+
+stock void ReturnTeamToSaferoom(int team)
+{
+	int warp_flags = GetCommandFlags("warp_to_start_area");
+	SetCommandFlags("warp_to_start_area", warp_flags & ~FCVAR_CHEAT);
+
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (IsClientInGame(client) && GetClientTeam(client) == team)
+		{
+			ReturnPlayerToSaferoom(client, true);
+		}
+	}
+
+	SetCommandFlags("warp_to_start_area", warp_flags);
 }
 
 stock void SetTeamFrozen(int team, bool freezeStatus)
