@@ -50,6 +50,13 @@ native bool Picker_IsJoinPlayer(int client);
  */
 native int Picker_GetFirstAndSecondPicker();
 
+/**
+ * This function display the player number.
+ *
+ * @param client			Client Index.
+ */
+native int Picker_GetPlayerNumber(int client);
+
 public SharedPlugin __pl_l4d2_picker = 
 {
 	name = "l4d2_picker",
@@ -67,5 +74,6 @@ public void __pl_l4d2_picker_SetNTVOptional()
 	MarkNativeAsOptional("Picker_IsPicking");
 	MarkNativeAsOptional("Picker_IsJoinPlayer");
 	MarkNativeAsOptional("Picker_GetFirstAndSecondPicker");
+	MarkNativeAsOptional("Picker_GetPlayerNumber");
 }
 #endif

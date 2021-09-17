@@ -878,7 +878,7 @@ void UpdatePanel()
 				else if (isPicking && Picker_IsJoinPlayer(client))
 				{
 					++chooseCount;
-					Format(nameBuf, sizeof(nameBuf), "%d : %s\n", chooseCount, nameBuf);
+					Format(nameBuf, sizeof(nameBuf), "%d : %s\n",  Picker_GetPlayerNumber(client), nameBuf);
 					StrCat(chooseBuffer, sizeof(chooseBuffer), nameBuf);
 				}
 				else
