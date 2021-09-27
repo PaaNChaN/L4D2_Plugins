@@ -166,7 +166,7 @@ public void OnRoundIsLive()
 		if (IsClientShowAnnounceSI(client))
 		{
 			// announce SI classes up now
-			char msg[128];
+			char msg[256];
 
 			if (ProcessSIString(iSpawns, iSpawnClass, msg, sizeof(msg), false, client))
 			{
@@ -194,7 +194,7 @@ public void Event_PlayerLeftStartArea(Event event, const char[] name, bool dontB
 			if (IsClientShowAnnounceSI(client))
 			{
 				// announce SI classes up now
-				char msg[128];
+				char msg[256];
 
 				if (ProcessSIString(iSpawns, iSpawnClass, msg, sizeof(msg), false, client) && g_hCvarPrint.IntValue != 0)
 				{
@@ -220,7 +220,7 @@ bool ProcessSIString(int iSpawns, const int[] iSpawnClass, char[] msg, int maxle
 	}
 
 	int printFlags = g_hCvarPrint.IntValue;
-	char cFormat[32];
+	char cFormat[128];
 
  	if (!client && footer) {
  		strcopy(msg, maxlength, "SI: ");
@@ -248,7 +248,7 @@ bool ProcessSIString(int iSpawns, const int[] iSpawnClass, char[] msg, int maxle
 
 void AnnounceSIClasses(const char[] Message, int client)
 {
-	char temp[128];
+	char temp[256];
 	
 	int printFlags = g_hCvarPrint.IntValue;
 	if (printFlags & HINT_FLAG)
