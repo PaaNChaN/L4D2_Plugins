@@ -39,4 +39,6 @@ public Action ShowPlayersCountry_Cmd(int client, int args)
             CPrintToChatEx(client, i, "{teamcolor}%N{default}: {olive}%s", i, cCountryCode);
         }
     }
+
+    return Plugin_Handled;
 }

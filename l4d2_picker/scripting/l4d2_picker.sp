@@ -5,7 +5,7 @@
 #include <readyup>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.3"
+#define PLUGIN_VERSION "1.3.1"
 
 // L4D2Team Enum
 enum L4D2_Team
@@ -154,6 +154,8 @@ public Action Timer_PlayerTeamEvent(Handle timer, DataPack dp)
         CPrintToChat(client, "<{olive}Picker{default}> the picker can't move to the spectators until the pick is finished.");
         ChangeClientTeamEx(client, client == iFirstPickerClient ? FirstPickerTeam : SecoundPickerTeam);
     }
+
+    return Plugin_Stop;
 }
 
 public Action VotePicker_Cmd(int client, int args) 
@@ -209,6 +211,8 @@ public Action PickerAnnounce_Cmd(int client, int args)
     {
         ShowPrintChatPickerList(client);
     }
+
+    return Plugin_Handled;
 }
 
 public Action FourcePicker_Cmd(int client, int args)
@@ -219,7 +223,7 @@ public Action FourcePicker_Cmd(int client, int args)
 
         if (iJoinPlayerCount < 2)
         {
-            ReplyToCommand(client, "<{olive}Picker{default}> can't start vote because there are less than 2 players.");
+            CPrintToChat(client, "<{olive}Picker{default}> can't start vote because there are less than 2 players.");
             return Plugin_Handled;
         }
 
@@ -237,9 +241,11 @@ public Action PickerStop_Cmd(int client, int args)
         bPickerStop = true;
         CPrintToChatAll("<{olive}Picker{default}> stopped the picker by admin ({green}%N{default})", client);
     }
+
+    return Plugin_Handled;
 }
 
-public int VotePickerActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2)
+public void VotePickerActionHandler(Handle vote, BuiltinVoteAction action, int param1, int param2)
 {
     switch (action)
     {
@@ -379,6 +385,8 @@ public Action StartPick_Timer(Handle timer)
 
     Menu_Initialize();
     CreateTimer(0.5, Picking_Timer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+
+    return Plugin_Stop;
 }
 
 public void ShowPrintChatPickerList(int client)
@@ -698,7 +706,7 @@ stock bool IsPlayer(int client)
     return (team == L4D2Team_Survivor || team == L4D2Team_Infected);
 }
 
-stock char GetStrTeamName(int client)
+stock char[] GetStrTeamName(int client)
 {
     char strTeamName[10];
 

@@ -2,7 +2,7 @@
 #include <colors>
 
 #define NAME_TAG_FILE_PATH "configs/l4d2_name_tag.txt"
-#define PLUGIN_VERSION     "1.1"
+#define PLUGIN_VERSION     "1.1.1"
 #define TAG_MAX_LENGTH     256
 #define PF_MAX_LENGTH      32
 
@@ -93,6 +93,8 @@ public Action LoadNameTag_Cmd(int client, int args)
 {
     CPrintToChatAll("<{green}NameTag{default}> NameTag was reloaded.");
     LoadNameTag();
+
+    return Plugin_Handled;
 }
 
 public void LoadNameTag()

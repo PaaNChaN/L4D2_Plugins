@@ -211,7 +211,7 @@ stock bool IsValidClient(int client)
     return true;
 }
 
-stock char GetStrTeamName(int client)
+stock char[] GetStrTeamName(int client)
 {
     char strTeamName[10];
 
