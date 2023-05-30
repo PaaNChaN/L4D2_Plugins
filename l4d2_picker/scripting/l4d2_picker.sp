@@ -1,41 +1,48 @@
 #include <sourcemod>
 #include <builtinvotes>
 #include <colors>
+#define L4D2UTIL_STOCKS_ONLY 1
+#include <l4d2util>
 #undef REQUIRE_PLUGIN
 #include <readyup>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.3.1"
-
-// L4D2Team Enum
-enum L4D2_Team
-{
-    L4D2Team_None = 0,
-    L4D2Team_Spectator,
-    L4D2Team_Survivor,
-    L4D2Team_Infected
-}
+#define START_PICK_PLAYERS 3
 
 // ConVars
-ConVar survivor_limit, z_max_player_zombies;
+ConVar
+    survivor_limit,
+    z_max_player_zombies;
 
 // Variables
-int iFirstPickerClient, iSecoundPickerClient, iFirstAndSecondPicker;
-bool bLeftStartArea, bIsPicking, bJoinPlayer[MAXPLAYERS+1], bPickerStop;
-Handle hVotePicker;
-ArrayList alPickers;
-ArrayList alJoinPlayers;
-Menu pickPlayersMenu;
+int
+    iFirstPickerClient,
+    iSecoundPickerClient,
+    iFirstAndSecondPicker;
+
+bool
+    bLeftStartArea,
+    bIsPicking,
+    bPickerStop,
+    bJoinPlayer[MAXPLAYERS + 1];
+
+ArrayList
+    alPickers,
+    alJoinPlayers;
+
+Menu
+    pickPlayersMenu;
 
 // Plugins Available
-bool bReadyUpAvailable; // readyup
+bool
+    bReadyUpAvailable; // readyup
 
 public Plugin myinfo =  
 {
     name = "L4D2 Vote Picker",
     author = "PaaNChaN",
     description = "select picker from the players",
-    version = PLUGIN_VERSION,
+    version = "1.4",
     url = "https://github.com/PaaNChaN/L4D2_Plugins"
 };
 
@@ -88,7 +95,6 @@ public void OnAllPluginsLoaded()
 public void OnPluginStart()
 {
     RegConsoleCmd("sm_picker", VotePicker_Cmd, "command to specify the picker from the players");
-    RegConsoleCmd("sm_pannounce", PickerAnnounce_Cmd, "shows the picker and player in the chat");
 
     RegAdminCmd("sm_fpicker",     FourcePicker_Cmd, ADMFLAG_BAN);
     RegAdminCmd("sm_forcepicker", FourcePicker_Cmd, ADMFLAG_BAN);
@@ -125,8 +131,8 @@ public void LeftStartArea_Event(Event event, const char[] name, bool dontBroadca
 
 public void PlayerTeam_Event(Event event, const char[] name, bool dontBroadcast)
 {
-    int client     = GetClientOfUserId(event.GetInt("userid"));
-    L4D2_Team team = L4D2_Team:event.GetInt("team");
+    int client = GetClientOfUserId(event.GetInt("userid"));
+    int team   = event.GetInt("team");
 
     if (!client || IsFakeClient(client)) return;
     if (team == L4D2Team_None) return;
@@ -143,16 +149,16 @@ public Action Timer_PlayerTeamEvent(Handle timer, DataPack dp)
 {
     dp.Reset();
 
-    int client     = dp.ReadCell();
-    L4D2_Team team = dp.ReadCell();
+    int client = dp.ReadCell();
+    int team   = dp.ReadCell();
 
-    L4D2_Team FirstPickerTeam    = iFirstAndSecondPicker == 0 ? L4D2Team_Survivor : L4D2Team_Infected;
-    L4D2_Team SecoundPickerTeam  = iFirstAndSecondPicker == 0 ? L4D2Team_Infected : L4D2Team_Survivor;
+    int FirstPickerTeam   = iFirstAndSecondPicker == 0 ? L4D2Team_Survivor : L4D2Team_Infected;
+    int SecoundPickerTeam = iFirstAndSecondPicker == 0 ? L4D2Team_Infected : L4D2Team_Survivor;
 
     if (team == L4D2Team_Spectator)
     {
         CPrintToChat(client, "<{olive}Picker{default}> the picker can't move to the spectators until the pick is finished.");
-        ChangeClientTeamEx(client, client == iFirstPickerClient ? FirstPickerTeam : SecoundPickerTeam);
+        MoveToTeam(client, client == iFirstPickerClient ? FirstPickerTeam : SecoundPickerTeam);
     }
 
     return Plugin_Stop;
@@ -162,12 +168,9 @@ public Action VotePicker_Cmd(int client, int args)
 {
     if (((!bReadyUpAvailable && !bLeftStartArea) || (bReadyUpAvailable && IsInReady())) && IsPlayer(client))
     {
-        int iJoinPlayerCount  = GetJoinPlayersCount();
-        int iTotalPlayerCount = GetTotalPlayersCount();
-
-        if (iJoinPlayerCount < iTotalPlayerCount)
+        if (GetJoinPlayersCount() < START_PICK_PLAYERS)
         {
-            CPrintToChat(client, "<{olive}Picker{default}> can't start vote because there are less than %d players.", iTotalPlayerCount);
+            CPrintToChat(client, "<{olive}Picker{default}> can't start vote because there are less than %d players.", START_PICK_PLAYERS);
             return Plugin_Handled;
         }
 
@@ -175,7 +178,7 @@ public Action VotePicker_Cmd(int client, int args)
         int[] iPlayers = new int[MaxClients];
         for (int i = 1; i <= MaxClients; i++)
         {
-            if (!IsConnectedInGame(i) || (L4D2_Team:GetClientTeam(i) == L4D2Team_Spectator))
+            if (!IsConnectedInGame(i) || (GetClientTeam(i) == L4D2Team_Spectator))
             {
                 continue;
             }
@@ -188,7 +191,7 @@ public Action VotePicker_Cmd(int client, int args)
             char cVoteTitle[32];
             Format(cVoteTitle, sizeof(cVoteTitle), "Choose a Picker?");
 
-            hVotePicker = CreateBuiltinVote(VotePickerActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
+            Handle hVotePicker = CreateBuiltinVote(VotePickerActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
 
             SetBuiltinVoteArgument(hVotePicker, cVoteTitle);
             SetBuiltinVoteInitiator(hVotePicker, client);
@@ -205,25 +208,13 @@ public Action VotePicker_Cmd(int client, int args)
     return Plugin_Continue;
 }
 
-public Action PickerAnnounce_Cmd(int client, int args)
-{
-    if (bIsPicking)
-    {
-        ShowPrintChatPickerList(client);
-    }
-
-    return Plugin_Handled;
-}
-
 public Action FourcePicker_Cmd(int client, int args)
 {
-    if (((!bReadyUpAvailable && !bLeftStartArea) || (bReadyUpAvailable && IsInReady())) && IsPlayer(client))
+    if (((!bReadyUpAvailable && !bLeftStartArea) || (bReadyUpAvailable && IsInReady())))
     {
-        int iJoinPlayerCount  = GetJoinPlayersCount();
-
-        if (iJoinPlayerCount < 2)
+        if (GetJoinPlayersCount() < START_PICK_PLAYERS)
         {
-            CPrintToChat(client, "<{olive}Picker{default}> can't start vote because there are less than 2 players.");
+            CPrintToChat(client, "<{olive}Picker{default}> can't start vote because there are less than %d players.", START_PICK_PLAYERS);
             return Plugin_Handled;
         }
 
@@ -251,7 +242,6 @@ public void VotePickerActionHandler(Handle vote, BuiltinVoteAction action, int p
     {
         case BuiltinVoteAction_End:
         {
-            hVotePicker = null;
             CloseHandle(vote);
         }
         case BuiltinVoteAction_Cancel:
@@ -276,12 +266,9 @@ public void VotePickerResultHandler(Handle vote, int num_votes, int num_clients,
         {
             if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2))
             {
-                if (vote == hVotePicker)
-                {
-                    DisplayBuiltinVotePass(vote, "Choose...");
-                    CreateTimer(5.0, StartVotePicker_Timer);
-                    return;
-                }
+                DisplayBuiltinVotePass(vote, "Picker Start!!!");
+                CreateTimer(5.0, StartVotePicker_Timer);
+                return;
             }
         }
     }
@@ -289,12 +276,9 @@ public void VotePickerResultHandler(Handle vote, int num_votes, int num_clients,
 
 public Action StartVotePicker_Timer(Handle timer)
 {
-    int iJoinPlayerCount  = GetJoinPlayersCount();
-    int iTotalPlayerCount = GetTotalPlayersCount();
-
-    if (iJoinPlayerCount < iTotalPlayerCount)
+    if (GetJoinPlayersCount() < START_PICK_PLAYERS)
     {
-        CPrintToChatAll("<{olive}Picker{default}> can't start vote because there are less than %d players.", iTotalPlayerCount);
+        CPrintToChatAll("<{olive}Picker{default}> can't start vote because there are less than %d players.", START_PICK_PLAYERS);
         return Plugin_Handled;
     }
 
@@ -347,8 +331,8 @@ public int GetPickerClient()
 public void StartChoosePlayersPick(int iSurPickerClient, int iInfPickerClient)
 {
     JoinPlayersToSpec();
-    ChangeClientTeamEx(iSurPickerClient, L4D2Team_Survivor);
-    ChangeClientTeamEx(iInfPickerClient, L4D2Team_Infected);
+    MoveToTeam(iSurPickerClient, L4D2Team_Survivor);
+    MoveToTeam(iInfPickerClient, L4D2Team_Infected);
 
     /*
         0 = 1stPicker: Survivors / 2ndPicker: Infected
@@ -412,12 +396,14 @@ public void ShowPrintChatPickerList(int client)
 
         if (IsConnectedInGame(iPickerClient))
         {
+            int clientTeam = GetClientTeam(iPickerClient);
+
             CPrintToChatEx(
                 client,
                 iPickerClient,
                 "<{olive}Picker{default}> %s Picker (%s): {teamcolor}%N",
                 iPickerClient == iFirstPickerClient ? "1st" : "2nd",
-                GetStrTeamName(iPickerClient),
+                L4D2_TeamName[clientTeam],
                 iPickerClient
             );
         }
@@ -500,7 +486,7 @@ public void MenuAddItemPlayers()
     {
         int iPClient = alJoinPlayers.Get(i);
 
-        if (IsConnectedInGame(iPClient) && L4D2_Team:GetClientTeam(iPClient) == L4D2Team_Spectator)
+        if (IsConnectedInGame(iPClient) && GetClientTeam(iPClient) == L4D2Team_Spectator)
         {
             IntToString(iPClient, clientId, sizeof(clientId));
             GetClientName(iPClient, clientName, sizeof(clientName));
@@ -547,16 +533,16 @@ public int Menu_PickPlayersHandler(Menu menu, MenuAction action, int param1, int
         menu.GetItem(param2, cPClient, sizeof(cPClient));
         int iPClient = StringToInt(cPClient);
 
-        L4D2_Team ltPickerTeam = L4D2_Team:GetClientTeam(param1);
-        L4D2_Team ltPlayerTeam = L4D2_Team:GetClientTeam(iPClient);
-        int iTeamMaxHumans     = GetTeamMaxHumans(ltPickerTeam);
+        int ltPickerTeam   = GetClientTeam(param1);
+        int ltPlayerTeam   = GetClientTeam(iPClient);
+        int iTeamMaxHumans = GetTeamMaxHumans(ltPickerTeam);
 
         if (iTeamMaxHumans > 0 && GetTeamHumanCount(ltPickerTeam) >= iTeamMaxHumans)
         {
             CPrintToChat(
                 param1,
                 "<{olive}Picker{default}> {blue}%s{default} team is full.",
-                GetStrTeamName(param1)
+                L4D2_TeamName[ltPickerTeam]
             );
         }
         else if (!IsConnectedInGame(iPClient))
@@ -581,10 +567,10 @@ public int Menu_PickPlayersHandler(Menu menu, MenuAction action, int param1, int
                 "<{olive}Picker{default}> {green}%N{default} was picked by {teamcolor}%N{default} (%s)",
                 iPClient,
                 param1,
-                GetStrTeamName(param1)
+                L4D2_TeamName[ltPickerTeam]
             );
 
-            ChangeClientTeamEx(iPClient, ltPickerTeam);
+            MoveToTeam(iPClient, ltPickerTeam);
         }
     }
 
@@ -593,7 +579,7 @@ public int Menu_PickPlayersHandler(Menu menu, MenuAction action, int param1, int
 
 public void PickerStop()
 {
-    CPrintToChatAll("<{olive}Picker{default}> Finish The Picker...");
+    CPrintToChatAll("<{olive}Picker{default}> end of picker...");
     delete pickPlayersMenu;
     ShowHideCmdToPicker(true);
     Initialize();
@@ -607,50 +593,26 @@ public void JoinPlayersToSpec()
 
         if (IsConnectedInGame(client))
         {
-            ChangeClientTeamEx(client, L4D2Team_Spectator);
+            MoveToTeam(client, L4D2Team_Spectator);
         }
     }
 }
 
-stock bool ChangeClientTeamEx(int client, L4D2_Team team)
+public void MoveToTeam(int client, int team)
 {
-    if (L4D2_Team:GetClientTeam(client) == team)
+    if (GetClientTeam(client) == team)
     {
-        return true;
+        return;
     }
 
     if (team != L4D2Team_Survivor)
     {
-        ChangeClientTeam(client, _:team);
-        return true;
+        ChangeClientTeam(client, team);
     }
     else
     {
-        int bot = FindSurvivorBot();
-        if (bot > 0)
-        {
-            int flags = GetCommandFlags("sb_takecontrol");
-            SetCommandFlags("sb_takecontrol", flags & ~FCVAR_CHEAT);
-            FakeClientCommand(client, "sb_takecontrol");
-            SetCommandFlags("sb_takecontrol", flags);
-            return true;
-        }
+        FakeClientCommand(client, "jointeam 2");
     }
-
-    return false;
-}
-
-stock int FindSurvivorBot()
-{
-    for (int client = 1; client <= MaxClients; client++)
-    {
-        if(IsClientInGame(client) && IsFakeClient(client) && L4D2_Team:GetClientTeam(client) == L4D2Team_Survivor)
-        {
-            return client;
-        }
-    }
-
-    return -1;
 }
 
 stock int GetTotalPlayersCount()
@@ -663,7 +625,7 @@ stock int GetJoinPlayersCount()
     return GetTeamHumanCount(L4D2Team_Survivor) + GetTeamHumanCount(L4D2Team_Infected);
 }
 
-stock int GetTeamMaxHumans(L4D2_Team team)
+stock int GetTeamMaxHumans(int team)
 {
     switch (team)
     {
@@ -680,13 +642,13 @@ stock int GetTeamMaxHumans(L4D2_Team team)
     return 0;
 }
 
-stock int GetTeamHumanCount(L4D2_Team team)
+stock int GetTeamHumanCount(int team)
 {
     int humans = 0;
     
     for (int client = 1; client <= MaxClients; client++)
     {
-        if (IsConnectedInGame(client) && L4D2_Team:GetClientTeam(client) == team)
+        if (IsConnectedInGame(client) && GetClientTeam(client) == team)
         {
             humans++;
         }
@@ -702,23 +664,6 @@ stock bool IsConnectedInGame(int client)
 
 stock bool IsPlayer(int client)
 {
-    L4D2_Team team = L4D2_Team:GetClientTeam(client);
+    int team = GetClientTeam(client);
     return (team == L4D2Team_Survivor || team == L4D2Team_Infected);
-}
-
-stock char[] GetStrTeamName(int client)
-{
-    char strTeamName[10];
-
-    switch (L4D2_Team:GetClientTeam(client))
-    {
-        case L4D2Team_Spectator:
-            strTeamName = "Spectator";
-        case L4D2Team_Survivor:
-            strTeamName = "Survivor";
-        case L4D2Team_Infected:
-            strTeamName = "Infected";
-    }
-
-    return strTeamName;
 }
