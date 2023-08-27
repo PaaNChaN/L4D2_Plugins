@@ -72,9 +72,14 @@ public Action Say_Callback(int client, char[] command, int args)
     GetCmdArgString(sChat, sizeof(sChat));
     StripQuotes(sChat);
 
-    if(IsChatTrigger() && (sChat[0] == '!' || sChat[0] == '/' || sChat[0] == '@'))
+    if(sChat[0] == '!' || sChat[0] == '/' || sChat[0] == '@')
     {
-        return Plugin_Handled;
+        if (IsChatTrigger())
+        {
+            return Plugin_Handled;
+        }
+
+        return Plugin_Continue;
     }
 
     if (bBSCAvailable && BaseComm_IsClientGagged(client))
@@ -115,9 +120,14 @@ public Action TeamSay_Callback(int client, char[] command, int args)
     GetCmdArgString(sChat, sizeof(sChat));
     StripQuotes(sChat);
 
-    if(IsChatTrigger() && (sChat[0] == '!' || sChat[0] == '/' || sChat[0] == '@'))
+    if(sChat[0] == '!' || sChat[0] == '/' || sChat[0] == '@')
     {
-        return Plugin_Handled;
+        if (IsChatTrigger())
+        {
+            return Plugin_Handled;
+        }
+
+        return Plugin_Continue;
     }
 
     if (bBSCAvailable && BaseComm_IsClientGagged(client))
